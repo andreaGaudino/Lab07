@@ -177,7 +177,7 @@ class Controller:
         risultato = cerca_percorso({}, citta_migliore)
         self._view.lst_result.controls.append(ft.Text(f"Il percorso con costo minimo ha costo: {costo_minimo}"))
         for i in risultato:
-            self._view.lst_result.controls.append(ft.Text(f"{(risultato[i][0]).__str__}"))
+            self._view.lst_result.controls.append(ft.Text(f"[{risultato[i][0].localita} - {risultato[i][0].data}] Umidità = {risultato[i][0].umidita}"))
         self._view.update_page()
 
 
