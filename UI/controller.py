@@ -87,6 +87,8 @@ class Controller:
                         new_situazioni[situa.data].append(situa)
                     else:
                         new_situazioni[situa.data] = [situa]
+            ultima = None
+            ultima_data = None
             if len(dizio) >= 15:
                 return dizio
             elif len(dizio) == 0:
@@ -99,23 +101,84 @@ class Controller:
                     for i in list(new_situazioni.values())[j]:
                         if i.localita==citta.localita and ((i.data-citta.data).days==1 or (i.data-citta.data).days==2):
                             dizio[i.data] = (i, list(dizio.values())[-1][1]+1)
+                #print(dizio)
+                return cerca_percorso(dizio, citta_iniziale)
             else:
-                ultima =  list(dizio.values())[-1]
+                ultima = list(dizio.values())[-1]
                 ultima_data = ultima[0].data
                 migliore = None
                 if ultima[1] < 6 and len(dizio)<3:
-                    pass #continua da qua
+                    for data in new_situazioni:
+                        if (ultima_data-data).days==1:
+                            for i in new_situazioni[data]:
+                                if i.localita == ultima[0].localita:
+                                    dizio[i.data] = (i, ultima[1]+1)
+                    #print(dizio)
+                    return cerca_percorso(dizio, citta_iniziale)
+                elif ultima[1]<6 and len(dizio)>=3:
+                    ultime_3 = [list(dizio.values())[-1][0].localita, list(dizio.values())[-2][0].localita,list(dizio.values())[-3][0].localita]
+                    if ultime_3[0] == ultime_3[1] and ultime_3[1] == ultime_3[2]:
+                        for data in new_situazioni:
+                            if (ultima_data-data).days==-1:
+                                for i in new_situazioni[data]:
+                                    if migliore is None or (i.umidita<migliore.umidita):
+                                        migliore = i
+                                count = 0
+                                for j in list(dizio.values()):
+                                    if j[0].localita == migliore.localita:
+                                        count += 1
+                                dizio[migliore.data] = (migliore, count+1)
+                    else:
+                        for data in new_situazioni:
+                            if (ultima_data-data).days==-1:
+                                for i in new_situazioni[data]:
+                                    if i.localita == ultima[0].localita:
+                                        dizio[i.data] = (i, ultima[1]+1)
+                    #print(dizio)
+                    return cerca_percorso(dizio, citta_iniziale)
+                else:
+                    da_evitare = ultima[0].localita
+                    for data in new_situazioni:
+                        if (ultima_data - data).days == -1:
+                            for i in new_situazioni[data]:
+                                if i.localita != da_evitare:
+                                    if migliore is None or (i.umidita < migliore.umidita):
+                                        migliore = i
+                            count = 0
+                            for j in list(dizio.values()):
+                                if j[0].localita == migliore.localita:
+                                    count += 1
+                            dizio[migliore.data] = (migliore, count + 1)
+                    return cerca_percorso(dizio, citta_iniziale)
 
 
 
 
 
-
+        costo_minimo = float('inf')
+        citta_migliore = ""
         for citta in ["Torino", "Milano", "Genova"]:
+            costo = 0
+            count = 0
+            prec = None
             d = cerca_percorso({}, citta)
             for i in d:
-                self._view.lst_result.controls.append(ft.Text(f"{d[i]}"))
-            self._view.update_page()
+                costo += d[i][0].umidita
+                count += 1
+                if count > 1 and prec.localita != d[i][0].localita:
+                    costo += 100
+                    prec = d[i][0]
+                if count == 1 :
+                    prec = d[i][0]
+            if costo < costo_minimo:
+                costo_minimo = costo
+                citta_migliore = citta
+
+        risultato = cerca_percorso({}, citta_migliore)
+        self._view.lst_result.controls.append(ft.Text(f"Il percorso con costo minimo ha costo: {costo_minimo}"))
+        for i in risultato:
+            self._view.lst_result.controls.append(ft.Text(f"{(risultato[i][0]).__str__}"))
+        self._view.update_page()
 
 
     def read_mese(self, e):
