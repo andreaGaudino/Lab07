@@ -1,5 +1,8 @@
+import random
+
 import flet as ft
 
+import model.model
 from UI.view import View
 from model.model import Model
 
@@ -14,6 +17,7 @@ class Controller:
         self._mese = 0
 
     def handle_umidita_media(self, e):
+
         self._view.lst_result.clean()
         self._view.update_page()
 
@@ -96,12 +100,24 @@ class Controller:
                 for i in list(new_situazioni.values())[0]:
                     if i.localita == citta_iniziale:
                         citta = i
-                dizio[citta.data] = (citta, 1)
-                for j in range(1,3):
-                    for i in list(new_situazioni.values())[j]:
-                        if i.localita==citta.localita and ((i.data-citta.data).days==1 or (i.data-citta.data).days==2):
-                            dizio[i.data] = (i, list(dizio.values())[-1][1]+1)
+                if citta is not None:
+                    dizio[citta.data] = (citta, 1)
+                    for j in range(1,3):
+                        for i in list(new_situazioni.values())[j]:
+                            if i.localita==citta.localita and ((i.data-citta.data).days==1 or (i.data-citta.data).days==2):
+                                dizio[i.data] = (i, list(dizio.values())[-1][1]+1)
                 #print(dizio)
+                else:
+                    altre_localita = []
+                    for i in list(new_situazioni.values())[0]:
+                        altre_localita.append(i)
+                    citta = random.choice(altre_localita)
+                    dizio[citta.data] = (citta, 1)
+                    for j in range(1, 3):
+                        for i in list(new_situazioni.values())[j]:
+                            if i.localita == citta.localita and (
+                                    (i.data - citta.data).days == 1 or (i.data - citta.data).days == 2):
+                                dizio[i.data] = (i, list(dizio.values())[-1][1] + 1)
                 return cerca_percorso(dizio, citta_iniziale)
             else:
                 ultima = list(dizio.values())[-1]
@@ -183,4 +199,11 @@ class Controller:
 
     def read_mese(self, e):
         self._mese = int(e.control.value)
+
+
+    def handle_sequenza_2(self, e):
+        if self._mese == 0:
+            self._view.create_alert("mese non valido riprova")
+            return
+        Model()
 
