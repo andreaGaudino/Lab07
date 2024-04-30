@@ -205,5 +205,10 @@ class Controller:
         if self._mese == 0:
             self._view.create_alert("mese non valido riprova")
             return
-        Model()
+        sequenza, costo = self._model.calcola_sequenza(self._mese)
+        self._view.lst_result.controls.clear()
+        self._view.lst_result.controls.append(ft.Text(f"Il costo della sequenza è {costo}"))
+        for fermata in sequenza:
+            self._view.lst_result.controls.append(ft.Text(fermata))
+        self._view.update_page()
 
